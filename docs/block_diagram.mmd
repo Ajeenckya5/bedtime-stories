@@ -1,0 +1,75 @@
+%% Bedtime Story Engine - system flow
+%% Render: https://mermaid.live  or  mmdc -i block_diagram.mmd -o block_diagram.png
+flowchart TB
+    U([User request<br/>CLI · POST /story]) --> IG
+
+    subgraph IG["① INPUT GUARDRAIL — before any generation"]
+        direction TB
+        I1[1· length & shape] --> I2[2· injection patterns]
+        I2 --> I3[3· PII scrub<br/>names kept, contacts stripped]
+        I3 --> I4[4· hard lexicon · off-limits themes<br/>distress routing]
+        I4 --> I5{{"5· LLM semantic screen ●<br/>catches intent a word list cannot"}}
+    end
+
+    I5 -->|refuse| REF[/"Child-safe redirect<br/>‘I only tell gentle stories…’"/]
+    I5 -->|allow / sanitize| CL
+
+    subgraph UP["② UNDERSTAND & PLAN"]
+        direction TB
+        CL{{"Classifier ●<br/>→ StoryBrief"}} --> RT[Strategy router<br/>8 tailored arcs]
+        RT --> PL{{"Planner ●<br/>→ beat sheet:<br/>want · obstacle · lesson<br/>5 beats · motifs · calm ending"}}
+    end
+
+    PL --> ST
+
+    subgraph GEN["③ GENERATE → EVALUATE → REVISE (max 3 cycles)"]
+        direction TB
+        ST{{"Storyteller ●<br/>temp 0.85 · anti-AI-tell prompt"}} --> DV
+        DV["Deterministic validators<br/>FK grade · sentence length<br/>banned lexicon · dread patterns<br/>calm-ending · human-voice score"]
+        DV -->|measured facts| JG{{"LLM Judge ● ×3 samples<br/>7-dim anchored rubric<br/>median + spread → agreement"}}
+        DV --> BL
+        JG --> BL{{"Composite =<br/>0.75 × rubric + 0.25 × deterministic<br/>+ hard vetoes"}}
+        BL -->|"< 82"| RV{{"Reviser ●<br/>must_fix list + quoted long sentences<br/>+ named hard words + stock phrases<br/>targeted edit, not regeneration"}}
+        RV -.re-evaluate.-> DV
+    end
+
+    BL -->|"≥ 82"| OG
+
+    subgraph OUT["④ OUTPUT GUARD & RELEASE"]
+        direction TB
+        OG["Three independent vetoes<br/>1· lexicon + dread<br/>2· moderation classifier (fails open)<br/>3· judge safety_violation"]
+        OG -->|clean| OK[/"Release: ok / ok_degraded"/]
+        OG -->|vetoed| FB[/"Fallback: curated safe story<br/>never an error, never unvetted text"/]
+    end
+
+    OK --> DEL([Story delivered])
+    FB --> DEL
+    DEL -.->|"feedback: ‘make it funnier’<br/>re-screened at the guardrail"| IG
+
+    subgraph OBS["⑤ OBSERVABILITY — taps every stage"]
+        direction TB
+        T[RunTrace → JSONL<br/>nested spans, one line per run]
+        M[MetricsRegistry → /metrics<br/>Prometheus counters + histograms]
+        D[HTML dashboard → /dashboard]
+        C[Cost ledger<br/>per-run + per-day caps]
+    end
+
+    subgraph PRV["Provider layer — every call passes through"]
+        P["token bucket · retry w/ jitter<br/>circuit breaker · budget guard<br/>prompt cache · mock for CI"]
+    end
+
+    IG -.spans.-> OBS
+    GEN -.spans.-> OBS
+    OUT -.spans.-> OBS
+    PRV -.-> GEN
+
+    classDef guard fill:#fef2f2,stroke:#fca5a5
+    classDef plan fill:#eff6ff,stroke:#bfdbfe
+    classDef gen fill:#f0fdf4,stroke:#bbf7d0
+    classDef out fill:#fffbeb,stroke:#fde68a
+    classDef obs fill:#f5f3ff,stroke:#ddd6fe
+    class IG guard
+    class UP plan
+    class GEN gen
+    class OUT out
+    class OBS obs

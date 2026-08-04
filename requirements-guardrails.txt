@@ -1,0 +1,9 @@
+# Optional: third-party guardrail frameworks.
+# The system runs fully without these - the built-in validators are the default.
+# Enable with BEDTIME_VALIDATORS=guardrails_ai  (or nemo, or both, comma-separated)
+
+guardrails-ai>=0.5.0
+# then: guardrails hub install hub://guardrails/toxic_language
+#       guardrails hub install hub://guardrails/detect_pii
+
+# nemoguardrails>=0.11.0     # needs a Colang rails config dir; see docs/RUNBOOK.md

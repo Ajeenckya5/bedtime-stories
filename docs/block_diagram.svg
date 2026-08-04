@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1010" width="1240" height="1010" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4b5563"/>
+    </marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b45309"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#15803d"/>
+    </marker>
+    <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .t   { font-size: 13px; fill: #111827; font-weight: 600; }
+      .s   { font-size: 10.5px; fill: #4b5563; }
+      .m   { font-size: 9.5px; fill: #6b7280; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .lbl { font-size: 10px; fill: #4b5563; }
+      .lblr{ font-size: 10px; fill: #b45309; font-weight: 600; }
+      .lblg{ font-size: 10px; fill: #15803d; font-weight: 600; }
+      .lblx{ font-size: 10px; fill: #b91c1c; font-weight: 600; }
+      .zn  { font-size: 11px; fill: #9ca3af; font-weight: 700; letter-spacing: .8px; }
+      .h   { font-size: 19px; fill: #111827; font-weight: 700; }
+      .hs  { font-size: 11.5px; fill: #6b7280; }
+    </style>
+  </defs>
+
+  <rect width="1240" height="1010" fill="#ffffff"/>
+
+  <text class="h" x="34" y="38">Bedtime Story Engine — system flow</text>
+  <text class="hs" x="34" y="58">Every model call is gpt-3.5-turbo. Boxes with a dot ● make a model call; the rest are deterministic (free, cannot hallucinate).</text>
+
+  <!-- ============ ZONE: INPUT GUARDRAIL ============ -->
+  <rect x="30" y="82" width="386" height="286" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text class="zn" x="46" y="104">① INPUT GUARDRAIL — before any generation</text>
+
+  <rect x="48" y="118" width="350" height="40" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="62" y="135">User request</text>
+  <text class="s" x="62" y="150">CLI · POST /story · POST /feedback</text>
+
+  <rect x="48" y="170" width="350" height="34" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="s" x="62" y="191">1. Length &amp; shape · 2. Injection patterns · 3. PII scrub</text>
+
+  <rect x="48" y="212" width="350" height="34" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="s" x="62" y="233">4. Hard lexicon · off-limits themes · distress routing</text>
+
+  <rect x="48" y="254" width="350" height="42" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="60" cy="269" r="3.5" fill="#2563eb"/>
+  <text class="t" x="72" y="273">5. LLM semantic screen</text>
+  <text class="s" x="72" y="288">catches intent a word list cannot · fails closed</text>
+
+  <rect x="48" y="306" width="350" height="46" rx="7" fill="#fee2e2" stroke="#fca5a5"/>
+  <text class="t" x="62" y="324">REFUSE → child-safe redirect</text>
+  <text class="s" x="62" y="340">"I only tell gentle stories… how about a brave knight who…"</text>
+
+  <!-- ============ ZONE: UNDERSTAND + PLAN ============ -->
+  <rect x="446" y="82" width="366" height="286" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text class="zn" x="462" y="104">② UNDERSTAND &amp; PLAN</text>
+
+  <rect x="464" y="118" width="330" height="60" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="476" cy="134" r="3.5" fill="#2563eb"/>
+  <text class="t" x="488" y="138">Classifier</text>
+  <text class="s" x="488" y="153">→ StoryBrief: category, characters, setting,</text>
+  <text class="s" x="488" y="167">   themes, must_include · heuristic fallback</text>
+
+  <rect x="464" y="190" width="330" height="52" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="478" y="209">Strategy router — 8 tailored arcs</text>
+  <text class="m" x="478" y="226">animal_friendship · adventure_quest · magic_wonder</text>
+  <text class="m" x="478" y="238">everyday_courage · lullaby · silly · curiosity · family</text>
+
+  <rect x="464" y="254" width="330" height="98" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="476" cy="270" r="3.5" fill="#2563eb"/>
+  <text class="t" x="488" y="274">Planner → StoryPlan (beat sheet)</text>
+  <text class="s" x="478" y="293">want · obstacle · lesson · 5 beats · sensory motifs</text>
+  <text class="s" x="478" y="308">· calming ending</text>
+  <text class="s" x="478" y="328" fill="#1d4ed8">Plan-then-write is what produces an arc instead</text>
+  <text class="s" x="478" y="342" fill="#1d4ed8">of a list of events. A bad plan is cheap to reject.</text>
+
+  <!-- ============ ZONE: OBSERVABILITY ============ -->
+  <rect x="842" y="82" width="368" height="286" rx="10" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+  <text class="zn" x="858" y="104">⑤ OBSERVABILITY — taps every stage</text>
+
+  <rect x="860" y="118" width="332" height="56" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="136">RunTrace → JSONL</text>
+  <text class="s" x="874" y="152">one line per run · nested spans · every decision,</text>
+  <text class="s" x="874" y="165">score and retry, queryable with jq</text>
+
+  <rect x="860" y="186" width="332" height="56" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="204">MetricsRegistry → /metrics</text>
+  <text class="s" x="874" y="220">Prometheus text format · counters, histograms,</text>
+  <text class="s" x="874" y="233">p50/p95 · sliced by stage and prompt version</text>
+
+  <rect x="860" y="254" width="332" height="46" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="272">HTML dashboard → /dashboard</text>
+  <text class="s" x="874" y="288">score trend, outcomes, guardrail events, cost/stage</text>
+
+  <rect x="860" y="312" width="332" height="40" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="330">Cost ledger</text>
+  <text class="s" x="874" y="345">per-run + per-day caps · tokens attributed by stage</text>
+
+  <!-- ============ ZONE: GENERATE + JUDGE LOOP ============ -->
+  <rect x="30" y="392" width="782" height="404" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text class="zn" x="46" y="414">③ GENERATE → EVALUATE → REVISE  (max 3 cycles)</text>
+
+  <rect x="48" y="430" width="230" height="62" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="60" cy="446" r="3.5" fill="#2563eb"/>
+  <text class="t" x="72" y="450">Storyteller</text>
+  <text class="s" x="62" y="467">drafts prose from the beat sheet</text>
+  <text class="s" x="62" y="481">temp 0.85 · anti-AI-tell prompt</text>
+
+  <!-- deterministic validators -->
+  <rect x="306" y="430" width="238" height="150" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="320" y="449">Deterministic validators</text>
+  <text class="s" x="320" y="466">Flesch-Kincaid grade (target 2–4.5)</text>
+  <text class="s" x="320" y="481">mean/max sentence length</text>
+  <text class="s" x="320" y="496">banned lexicon (word-boundary)</text>
+  <text class="s" x="320" y="511">scary intensity + dread patterns</text>
+  <text class="s" x="320" y="526">calm-ending check</text>
+  <text class="s" x="320" y="541">human-voice score (AI-tell detector)</text>
+  <text class="s" x="320" y="562" fill="#166534">cannot drift · anchors the LLM judge</text>
+
+  <!-- judge -->
+  <rect x="572" y="430" width="222" height="150" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="584" cy="446" r="3.5" fill="#2563eb"/>
+  <text class="t" x="596" y="450">LLM Judge ×3 samples</text>
+  <text class="s" x="586" y="468">7-dimension anchored rubric,</text>
+  <text class="s" x="586" y="482">each 1–5 with 1/3/5 descriptions</text>
+  <text class="m" x="586" y="500">age_appropriateness · narrative_arc</text>
+  <text class="m" x="586" y="513">engagement · language_fit</text>
+  <text class="m" x="586" y="526">human_voice · bedtime_suitability</text>
+  <text class="m" x="586" y="539">prompt_adherence</text>
+  <text class="s" x="586" y="558">median per dimension + spread</text>
+  <text class="s" x="586" y="572">→ agreement score · never sees prior scores</text>
+
+  <!-- blend -->
+  <rect x="306" y="600" width="488" height="52" rx="7" fill="#dcfce7" stroke="#86efac"/>
+  <text class="t" x="320" y="620">Composite  =  0.75 × LLM rubric  +  0.25 × deterministic</text>
+  <text class="s" x="320" y="638">plus hard vetoes: safety flag · banned terms · any dimension below 3.0 · calibrated threshold 82</text>
+
+  <!-- reviser -->
+  <rect x="48" y="600" width="230" height="106" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <circle cx="60" cy="616" r="3.5" fill="#2563eb"/>
+  <text class="t" x="72" y="620">Reviser</text>
+  <text class="s" x="62" y="638">receives the judge's must_fix list</text>
+  <text class="s" x="62" y="652">+ the actual long sentences quoted</text>
+  <text class="s" x="62" y="666">+ the actual hardest words named</text>
+  <text class="s" x="62" y="680">+ the stock phrases to delete</text>
+  <text class="s" x="62" y="698" fill="#166534">targeted edit, not regeneration</text>
+
+  <rect x="48" y="722" width="746" height="56" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="62" y="741">Loop policy</text>
+  <text class="s" x="62" y="757">Keep the best-scoring candidate always — a revision can never make the shipped story worse.</text>
+  <text class="s" x="62" y="771">Below 55 → re-plan and re-draft instead of polishing. Gain under 1.5 pts → stop (inside judge noise). Budget cap → stop.</text>
+
+  <!-- ============ ZONE: RELEASE ============ -->
+  <rect x="842" y="392" width="368" height="404" rx="10" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5"/>
+  <text class="zn" x="858" y="414">④ OUTPUT GUARD &amp; RELEASE</text>
+
+  <rect x="860" y="430" width="332" height="86" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="449">Three independent vetoes</text>
+  <text class="s" x="874" y="467">1. deterministic lexicon + dread patterns</text>
+  <text class="s" x="874" y="482">2. OpenAI moderation classifier (fails open, logged)</text>
+  <text class="s" x="874" y="497">3. judge safety_violation flag</text>
+  <text class="s" x="874" y="511" fill="#92400e">any one can block — false positives cost one retry</text>
+
+  <rect x="860" y="530" width="332" height="52" rx="7" fill="#dcfce7" stroke="#86efac"/>
+  <text class="t" x="874" y="550">Release: ok / ok_degraded</text>
+  <text class="s" x="874" y="567">degraded ships the best candidate + an honest note</text>
+
+  <rect x="860" y="596" width="332" height="60" rx="7" fill="#fef3c7" stroke="#fcd34d"/>
+  <text class="t" x="874" y="615">Fallback: curated safe story</text>
+  <text class="s" x="874" y="632">served if every candidate is vetoed, the budget blows,</text>
+  <text class="s" x="874" y="646">or the provider dies. Never an error, never unvetted text.</text>
+
+  <rect x="860" y="670" width="332" height="108" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+  <text class="t" x="874" y="689">Provider layer (all calls pass through)</text>
+  <text class="s" x="874" y="707">token bucket rate limiter</text>
+  <text class="s" x="874" y="721">retry with exponential backoff + full jitter</text>
+  <text class="s" x="874" y="735">circuit breaker: closed → open → half-open</text>
+  <text class="s" x="874" y="749">per-run + per-day USD budget guard</text>
+  <text class="s" x="874" y="763">deterministic prompt cache · mock provider for CI</text>
+
+  <!-- ============ FEEDBACK ============ -->
+  <rect x="30" y="820" width="782" height="66" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text class="zn" x="46" y="842">⑥ USER FEEDBACK LOOP</text>
+  <text class="s" x="46" y="861">"make it funnier" / "add a dog" → re-screened through the SAME input guardrail, then handed to the Reviser as the</text>
+  <text class="s" x="46" y="875">highest-priority must_fix item. A user cannot bypass safety just because a story is already on screen.</text>
+
+  <!-- ============ ARROWS ============ -->
+  <!-- input chain -->
+  <path d="M223 158 L223 170" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M223 204 L223 212" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M223 246 L223 254" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M223 296 L223 306" stroke="#b91c1c" stroke-width="1.6" marker-end="url(#ax)" fill="none"/>
+  <text class="lblx" x="230" y="304">unsafe</text>
+
+  <!-- guard -> classifier -->
+  <path d="M398 275 L440 275 L440 148 L464 148" stroke="#15803d" stroke-width="1.8" marker-end="url(#ag)" fill="none"/>
+  <text class="lblg" x="404" y="200">allow /</text>
+  <text class="lblg" x="404" y="212">sanitize</text>
+
+  <path d="M629 178 L629 190" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M629 242 L629 254" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+
+  <!-- plan -> storyteller -->
+  <path d="M540 352 L540 372 L163 372 L163 430" stroke="#4b5563" stroke-width="1.8" marker-end="url(#a)" fill="none"/>
+  <text class="lbl" x="300" y="368">StoryPlan</text>
+
+  <!-- storyteller -> validators -->
+  <path d="M278 461 L306 461" stroke="#4b5563" stroke-width="1.8" marker-end="url(#a)" fill="none"/>
+  <text class="lbl" x="272" y="424">draft</text>
+
+  <!-- validators -> judge (measured facts) -->
+  <path d="M544 480 L572 480" stroke="#4b5563" stroke-width="1.8" marker-end="url(#a)" fill="none"/>
+  <text class="lbl" x="528" y="420">measured facts</text>
+  <text class="lbl" x="536" y="586">handed to the judge so it reasons about counts instead of estimating them</text>
+
+  <!-- into blend -->
+  <path d="M425 580 L425 600" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+  <path d="M683 580 L683 600" stroke="#4b5563" stroke-width="1.6" marker-end="url(#a)" fill="none"/>
+
+  <!-- blend -> reviser (fail) -->
+  <path d="M306 626 L278 626" stroke="#b45309" stroke-width="1.8" marker-end="url(#ar)" fill="none"/>
+  <text class="lblr" x="284" y="618">&lt; 82</text>
+
+  <!-- reviser back up to validators -->
+  <path d="M163 600 L163 592 L292 592 L292 505 L306 505" stroke="#b45309" stroke-width="1.8" marker-end="url(#ar)" fill="none" stroke-dasharray="5 3"/>
+  <text class="lblr" x="176" y="588">re-evaluate</text>
+
+  <!-- blend -> release (pass) -->
+  <path d="M794 626 L826 626 L826 480 L860 480" stroke="#15803d" stroke-width="2" marker-end="url(#ag)" fill="none"/>
+  <text class="lblg" x="800" y="560">≥ 82</text>
+
+  <!-- release -> user -->
+  <path d="M860 556 L830 556 L830 850 L812 850" stroke="#15803d" stroke-width="1.8" marker-end="url(#ag)" fill="none"/>
+  <text class="lblg" x="700" y="844">story delivered</text>
+
+  <!-- feedback -> input guard -->
+  <path d="M30 853 L18 853 L18 138 L48 138" stroke="#4b5563" stroke-width="1.8" marker-end="url(#a)" fill="none" stroke-dasharray="5 3"/>
+  <text class="lbl" x="24" y="500" transform="rotate(-90 24 500)">feedback re-enters at the guardrail</text>
+
+  <!-- observability taps -->
+  <path d="M812 220 L842 220" stroke="#a78bfa" stroke-width="1.4" marker-end="url(#a)" fill="none" stroke-dasharray="3 3"/>
+  <path d="M794 700 L820 700 L820 330 L842 330" stroke="#a78bfa" stroke-width="1.4" fill="none" stroke-dasharray="3 3"/>
+  <text class="lbl" x="806" y="240" fill="#7c3aed">spans</text>
+</svg>
