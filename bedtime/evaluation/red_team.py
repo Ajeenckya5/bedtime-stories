@@ -129,7 +129,9 @@ MOCK_BANNER = """> ### These numbers are placeholders
 >
 > Re-run with an `OPENAI_API_KEY` set to get real numbers:
 > ```bash
-> make reports
+> python -m bedtime.evaluation.calibrate
+> python -m bedtime.evaluation.run_eval
+> python -m bedtime.evaluation.red_team
 > ```
 
 """

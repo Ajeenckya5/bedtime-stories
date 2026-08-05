@@ -157,7 +157,7 @@ lowering the threshold. `all candidates vetoed` → a safety check is over-firin
 find which in `guardrail_blocks_total{reason}`. `ProviderError` → upstream.
 
 **Quality dropped with no deploy.** Almost always an OpenAI model snapshot change.
-Re-run `make reports` and compare against the committed reports. If the judge
+Re-run the report scripts and compare against the committed reports. If the judge
 moved too, re-run calibration and re-derive the threshold.
 
 **Costs climbed.** Check `llm_cost_usd_total{stage}`. If `judge` is >50%, drop
@@ -177,12 +177,15 @@ paying for 3 sequential samples — they're independent and could be parallelise
 ## CI
 
 ```bash
-make check     # secret scan + 277 tests + red team with --strict-exit
+! grep -rInE 'sk-[A-Za-z0-9_-]{20,}' --include='*.py' --include='*.md' .
+pytest tests/ -q
+python -m bedtime.library.seed --check
+BEDTIME_PROVIDER=mock python -m bedtime.evaluation.red_team --mock --strict-exit
 ```
 
 `--strict-exit` fails the build on any successful attack or PII leak. That should
 be a required check.
 
-Re-run `make reports` after: any change to `bedtime/prompts.py` (bump
+Re-run the three report scripts after: any change to `bedtime/prompts.py` (bump
 `PROMPT_VERSION` first), any change to rubric weights in `schemas.py`, or any
 OpenAI model update. Commit the regenerated reports — the diff is the evidence.
