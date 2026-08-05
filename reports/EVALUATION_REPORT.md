@@ -1,7 +1,7 @@
 # End-to-End Evaluation Report
 
-Generated 2026-08-04 23:17 UTC · model `gpt-3.5-turbo` · prompts `v3.4.1` · provider `openai          # "mock" runs fully offline, no key needed`
-12 runs (12 requests × 1) in 674s.
+Generated 2026-08-05 02:58 UTC · model `gpt-3.5-turbo` · prompts `v3.5.0` · provider `openai          # "mock" runs fully offline, no key needed`
+12 runs (12 requests × 1) in 774s.
 
 Threshold 82 · 3 judge samples ·
 max 3 revisions.
@@ -12,38 +12,38 @@ max 3 revisions.
 |---|---|
 | Gate pass rate | **17%** |
 | Shipped clean (status `ok`) | 17% |
-| Passed with zero revisions | 8% |
+| Passed with zero revisions | 0% |
 | Fell back to the canned story | 0% |
 | Requested names present in output | 100% |
-| Ends calmly | 100% |
-| Mean composite | 80.3 (sd 5.7, range 73–95) |
-| Mean judge agreement | 96% |
-| Mean human-voice score | 80/100 |
+| Ends calmly | 92% |
+| Mean composite | 80.8 (sd 5.7, range 70–92) |
+| Mean judge agreement | 95% |
+| Mean human-voice score | 83/100 |
 
 ## Cost and latency
 
 | | mean | sd | min | max |
 |---|---|---|---|---|
-| Latency (s) | 56.1 | 20.0 | 19.3 | 82.2 |
-| Cost (USD) | 0.0180 | 0.0050 | 0.0080 | 0.0260 |
-| Model calls | 15.9 | 3.7 | 8 | 21 |
-| Revisions | 1.50 | 0.65 | 0 | 2 |
-| Words | 237 | 71 | 127 | 340 |
-| FK grade | 6.3 | 1.1 | 4.8 | 8.5 |
+| Latency (s) | 64.5 | 25.6 | 32.9 | 132.9 |
+| Cost (USD) | 0.0210 | 0.0070 | 0.0120 | 0.0390 |
+| Model calls | 17.5 | 4.8 | 12 | 29 |
+| Revisions | 1.83 | 0.80 | 1 | 3 |
+| Words | 223 | 53 | 155 | 333 |
+| FK grade | 6.1 | 0.9 | 4.3 | 7.6 |
 
-Extrapolated: **$18.00 per 1,000 stories**.
+Extrapolated: **$21.00 per 1,000 stories**.
 
 ### Where the tokens go
 
 | Stage | Tokens | Share |
 |---|---|---|
-| judge | 190,983 | 51% |
-| judge_repair | 77,164 | 21% |
-| revise | 44,258 | 12% |
-| draft | 32,053 | 9% |
-| plan | 18,743 | 5% |
-| classify | 5,677 | 2% |
-| input_screen | 3,753 | 1% |
+| judge | 219,710 | 52% |
+| judge_repair | 79,757 | 19% |
+| revise | 55,366 | 13% |
+| draft | 36,792 | 9% |
+| plan | 25,436 | 6% |
+| classify | 5,627 | 1% |
+| input_screen | 3,725 | 1% |
 
 If the judge is more than about half the token spend, drop `judge_samples` to 2
 and put the saving into an extra revision cycle — revisions move the score, extra
@@ -53,81 +53,83 @@ judge samples only measure it more precisely.
 
 | Dimension | Weight | Mean | SD | Min | Max |
 |---|---|---|---|---|---|
-| human voice | 0.14 | 3.17 | 0.55 | 3.0 | 5.0 |
-| engagement | 0.17 | 3.92 | 0.28 | 3.0 | 4.0 |
-| language fit | 0.16 | 3.92 | 0.64 | 3.0 | 5.0 |
-| narrative arc | 0.18 | 4.33 | 0.47 | 4.0 | 5.0 |
+| human voice | 0.14 | 3.00 | 0.71 | 2.0 | 5.0 |
+| engagement | 0.17 | 3.83 | 0.37 | 3.0 | 4.0 |
+| narrative arc | 0.18 | 4.25 | 0.43 | 4.0 | 5.0 |
+| language fit | 0.16 | 4.25 | 0.43 | 4.0 | 5.0 |
 | age appropriateness | 0.20 | 5.00 | 0.00 | 5.0 | 5.0 |
 | bedtime suitability | 0.09 | 5.00 | 0.00 | 5.0 | 5.0 |
 | prompt adherence | 0.06 | 5.00 | 0.00 | 5.0 | 5.0 |
 
-Weakest dimension: **human voice** (3.17/5). That is
+Weakest dimension: **human voice** (3.00/5). That is
 where the next prompt iteration should go.
 
 ## Score by category
 
 | Category | n | Mean | Min | Max |
 |---|---|---|---|---|
-| family_belonging | 1 | 73.2 | 73.2 | 73.2 |
-| adventure_quest | 1 | 74.5 | 74.5 | 74.5 |
-| animal_friendship | 2 | 77.6 | 74.1 | 81.0 |
-| bedtime_lullaby | 1 | 78.4 | 78.4 | 78.4 |
-| silly_humor | 1 | 81.5 | 81.5 | 81.5 |
-| magic_wonder | 1 | 81.8 | 81.8 | 81.8 |
-| everyday_courage | 4 | 83.5 | 76.5 | 94.7 |
-| curiosity_learning | 1 | 85.1 | 85.1 | 85.1 |
+| bedtime_lullaby | 1 | 75.8 | 75.8 | 75.8 |
+| everyday_courage | 4 | 77.3 | 70.2 | 84.4 |
+| magic_wonder | 1 | 79.5 | 79.5 | 79.5 |
+| animal_friendship | 2 | 79.7 | 79.5 | 79.9 |
+| silly_humor | 1 | 81.0 | 81.0 | 81.0 |
+| family_belonging | 1 | 86.0 | 86.0 | 86.0 |
+| curiosity_learning | 1 | 86.5 | 86.5 | 86.5 |
+| adventure_quest | 1 | 92.3 | 92.3 | 92.3 |
 
 A large spread between categories means one global accept threshold is quietly
 stricter on some kinds of request than others.
 
 ## Anything that went wrong
 
-- `q01` (ok_degraded, 74.11): composite 74.1 below threshold 82.0; reading level too high (FK 7.461 > 5.0)
-- `q02` (ok_degraded, 76.46): composite 76.5 below threshold 82.0; reading level too high (FK 5.544 > 5.0)
-- `q03` (ok_degraded, 78.43): composite 78.4 below threshold 82.0; reading level too high (FK 6.61 > 5.0)
-- `q04` (ok_degraded, 81.49): composite 81.5 below threshold 82.0; reading level too high (FK 5.618 > 5.0)
-- `q06` (ok_degraded, 73.22): composite 73.2 below threshold 82.0; reading level too high (FK 7.679 > 5.0)
-- `q07` (ok_degraded, 74.5): composite 74.5 below threshold 82.0; reading level too high (FK 8.521 > 5.0); sentences too long (mean 18.44 > 16.0 words)
-- `q08` (ok_degraded, 81.77): composite 81.8 below threshold 82.0
-- `q09` (ok_degraded, 81.02): composite 81.0 below threshold 82.0; reading level too high (FK 6.459 > 5.0)
-- `q11` (ok_degraded, 78.99): composite 79.0 below threshold 82.0; reading level too high (FK 6.661 > 5.0)
-- `q12` (ok_degraded, 84.03): reading level too high (FK 6.161 > 5.0)
+- `q01` (ok_degraded, 79.9): composite 79.9 below threshold 82.0; reading level too high (FK 7.628 > 5.0)
+- `q02` (ok_degraded, 70.23): human_voice scored 2.0 (floor 3.0); reads as machine-written (human-voice 50/100): stock phrase: "a sense of accomplishment"; stock phrase: "beamed with pride"; composite 70.2 below threshold 82.0
+- `q03` (ok_degraded, 75.78): composite 75.8 below threshold 82.0; reading level too high (FK 7.381 > 5.0); sentences too long (mean 16.36 > 16.0 words)
+- `q04` (ok_degraded, 81.03): composite 81.0 below threshold 82.0; reading level too high (FK 6.165 > 5.0)
+- `q07` (ok_degraded, 92.31): reading level too high (FK 6.647 > 5.0)
+- `q08` (ok_degraded, 79.47): composite 79.5 below threshold 82.0; reading level too high (FK 6.445 > 5.0)
+- `q09` (ok_degraded, 79.51): composite 79.5 below threshold 82.0; reading level too high (FK 5.965 > 5.0)
+- `q10` (ok_degraded, 84.41): ending is not calm/settled (bedtime stories must wind down); reading level too high (FK 5.804 > 5.0)
+- `q11` (ok_degraded, 74.15): human_voice scored 2.0 (floor 3.0); composite 74.2 below threshold 82.0; reading level too high (FK 5.922 > 5.0)
+- `q12` (ok_degraded, 80.26): composite 80.3 below threshold 82.0; reading level too high (FK 6.091 > 5.0)
 
 ## Every run
 
 | id | category | status | score | rev | words | FK | voice | calm | missing | latency | cost |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `q01` | animal_friendship | ok_degraded | 74.11 | 2 | 144 | 7.461 | 76 | yes | - | 69.96s | $0.0204 |
-| `q02` | everyday_courage | ok_degraded | 76.46 | 1 | 127 | 5.544 | 67 | yes | - | 31.66s | $0.0111 |
-| `q03` | bedtime_lullaby | ok_degraded | 78.43 | 2 | 216 | 6.61 | 76 | yes | - | 71.48s | $0.0216 |
-| `q04` | silly_humor | ok_degraded | 81.49 | 2 | 231 | 5.618 | 88 | yes | - | 68.1s | $0.0212 |
-| `q05` | curiosity_learning | ok | 85.06 | 0 | 143 | 4.772 | 88 | yes | - | 19.32s | $0.0078 |
-| `q06` | family_belonging | ok_degraded | 73.22 | 2 | 312 | 7.679 | 76 | yes | - | 63.02s | $0.0231 |
-| `q07` | adventure_quest | ok_degraded | 74.5 | 1 | 332 | 8.521 | 76 | yes | - | 45.27s | $0.0148 |
-| `q08` | magic_wonder | ok_degraded | 81.77 | 2 | 340 | 4.948 | 82 | yes | - | 61.98s | $0.0211 |
-| `q09` | animal_friendship | ok_degraded | 81.02 | 1 | 234 | 6.459 | 70 | yes | - | 58.37s | $0.0175 |
-| `q10` | everyday_courage | ok | 94.66 | 2 | 296 | 4.955 | 94 | yes | - | 77.1s | $0.0259 |
-| `q11` | everyday_courage | ok_degraded | 78.99 | 1 | 200 | 6.661 | 82 | yes | - | 25.0s | $0.0133 |
-| `q12` | everyday_courage | ok_degraded | 84.03 | 2 | 271 | 6.161 | 88 | yes | - | 82.25s | $0.0236 |
+| `q01` | animal_friendship | ok_degraded | 79.9 | 1 | 263 | 7.628 | 76 | yes | - | 49.9s | $0.0164 |
+| `q02` | everyday_courage | ok_degraded | 70.23 | 1 | 197 | 6.193 | 50 | yes | - | 58.35s | $0.0172 |
+| `q03` | bedtime_lullaby | ok_degraded | 75.78 | 2 | 229 | 7.381 | 70 | yes | - | 57.55s | $0.0197 |
+| `q04` | silly_humor | ok_degraded | 81.03 | 1 | 173 | 6.165 | 94 | yes | - | 44.48s | $0.0147 |
+| `q05` | curiosity_learning | ok | 86.53 | 1 | 155 | 4.334 | 94 | yes | - | 32.93s | $0.0122 |
+| `q06` | family_belonging | ok | 85.96 | 2 | 278 | 4.62 | 94 | yes | - | 55.0s | $0.0202 |
+| `q07` | adventure_quest | ok_degraded | 92.31 | 2 | 162 | 6.647 | 100 | yes | - | 68.82s | $0.0218 |
+| `q08` | magic_wonder | ok_degraded | 79.47 | 3 | 281 | 6.445 | 88 | yes | - | 132.91s | $0.0385 |
+| `q09` | animal_friendship | ok_degraded | 79.51 | 2 | 230 | 5.965 | 76 | yes | - | 86.99s | $0.0269 |
+| `q10` | everyday_courage | ok_degraded | 84.41 | 3 | 333 | 5.804 | 88 | NO | - | 72.56s | $0.0252 |
+| `q11` | everyday_courage | ok_degraded | 74.15 | 1 | 192 | 5.922 | 82 | yes | - | 38.5s | $0.0137 |
+| `q12` | everyday_courage | ok_degraded | 80.26 | 3 | 182 | 6.091 | 82 | yes | - | 76.03s | $0.0268 |
 
 ### Sample output — `q05`
 
 > **Request:** why is the moon sometimes out during the day?
 
-**Luna's Daytime Moon Discovery** · composite 85.06 · 143 words · FK 4.772 · human-voice 88/100
+**Luna's Daytime Moon Discovery** · composite 86.53 · 155 words · FK 4.334 · human-voice 94/100
 
 ```
-Luna noticed the moon high in the sky one sunny day. "Why is the moon out during the day?" Curiosity danced in her eyes.
+Luna spotted the moon high in the sky one sunny day. "Why is the moon out during the day?" She wondered, her eyes sparkling with questions.
 
-Imagining funny ideas, Luna wondered if the moon forgot to sleep. "Maybe it's playing hide-and-seek with the sun!" she giggled to herself.
+She thought the moon forgot to sleep. She giggled at the idea of the moon being as forgetful as Grandpa losing his glasses.
 
-Seeking answers, Luna visited Sol, the village's wise elder. "Did the moon get lost in the wrong sky?" Luna asked, hoping for clarity.
+Deciding to ask Sol, the wise elder, about the moon, Luna found him. Sol smiled kindly, "The moon doesn't sleep; it shares the sky with the sun."
 
-Sol chuckled kindly, "Not quite, dear Luna. The moon changes, like a green banana ripening into yellow. It's about transformation."
+"The moon borrows light from the sun to shine at night, returning it during the day," Sol explained. Luna's eyes widened with new knowledge.
 
-Understanding dawned on Luna like a rising sun. "So, the moon has different phases like a nightlight that glows brighter or softer!" Luna beamed with newfound knowledge.
+That night, Luna gazed at the moonlight painting the village rooftops. "Goodnight, moon," she whispered, feeling the warmth of this discovery.
 
-The cool night breeze kissed Luna's cheeks as she stared at the moon. "Goodnight, moon," she whispered, feeling the warmth of understanding wrap her in sweet dreams.
+The cool night breeze gently touched Luna's cheeks as she looked up at the moon. "Goodnight, moon," she whispered, feeling the warmth of this newfound understanding envelop her in sweet dreams.
+
+Revised word count: 211
 ```
 
 ## Reproduce
