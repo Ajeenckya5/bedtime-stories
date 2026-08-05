@@ -3,6 +3,7 @@
 from typing import List
 
 from ..guardrails.readability import hardest_words, long_sentences
+from ..length import length_note
 from ..observability.metrics import METRICS
 from ..prompts import REVISER_SYSTEM, REVISER_USER, numbered
 from ..schemas import Assessment, StoryBrief, StoryCandidate
@@ -18,6 +19,15 @@ class Reviser(Agent):
         fixes = self._build_fixes(assessment)
         extra = self._build_targets(candidate.text, assessment)
 
+        # Length goes first in the list. It is the one fix that changes how much
+        # room every other fix has to work in, and a story that is half the
+        # requested length is the defect a family notices before any of the
+        # subtler ones.
+        note = length_note(brief.length, len(candidate.text.split()))
+        if note:
+            fixes.insert(0, note)
+            METRICS.inc("length_corrections_total")
+
         text = self.text_call(
             REVISER_SYSTEM,
             REVISER_USER.format(
@@ -25,11 +35,12 @@ class Reviser(Agent):
                 fixes=numbered(fixes),
                 extra_targets=extra,
                 request=brief.sanitized_request,
-                min_words=self.settings.target_words_min,
-                max_words=self.settings.target_words_max,
+                min_words=brief.length.min_words,
+                max_words=brief.length.max_words,
             ),
             temperature=self.settings.reviser_temperature,
-            max_tokens=self.settings.max_tokens_story,
+            max_tokens=min(self.settings.max_tokens_story,
+                           max(600, int(brief.length.max_words * 1.9))),
         )
 
         title, body = strip_title(text)
@@ -79,11 +90,10 @@ class Reviser(Agent):
                 + ". Replace stock phrases with something specific and slightly odd, "
                   "and vary sentence lengths much more (two-word sentences next to long ones)."
             ))
-        if det.word_count < 400:
-            fixes.append(
-                f"The story is only {det.word_count} words. Expand the middle beats with "
-                "more dialogue and sensory detail - do not add new plot events."
-            )
+        # A flat "under 400 words is too short" check used to live here. It is
+        # wrong now that length is per-request: 400 words is short for a ten
+        # minute story and slightly long for a two minute one. length_note()
+        # does this properly against what the family actually asked for.
         return fixes[:6] or ["Tighten the prose without changing the plot."]
 
     @staticmethod

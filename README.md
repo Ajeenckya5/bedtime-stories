@@ -59,12 +59,54 @@ Six stages, five of them able to stop the run:
 |---|---|---|
 | **Input guardrail** | length, injection, PII, lexicon, distress routing, LLM semantic screen | 1 |
 | **Classifier** | free text → typed `StoryBrief`, picks 1 of 8 category strategies | 1 |
-| **Planner** | beat sheet: want / obstacle / lesson / 5 beats / motifs / calm ending | 1 |
-| **Storyteller** | prose from the plan, temp 0.85, anti-AI-tell prompt | 1 |
+| **Planner** | beat sheet: want / obstacle / lesson / 4–12 beats / motifs / calm ending | 1 |
+| **Storyteller** | prose from the plan, temp 0.85, anti-AI-tell prompt | 1–4 |
 | **Judge** | 7-dimension anchored rubric × 3 samples, median + spread | 3 |
 | **Reviser** | targeted edits from the judge's `must_fix` + quoted offending text | 0–3 |
 
 Typical run: 7–10 calls, ~$0.004, ~25s.
+
+### Story length
+
+Ask for a length and you get one — **2 to 20 minutes** of reading aloud.
+
+```
+python main.py --minutes 12 "a story about a shy dragon"
+python main.py "a 20 minute story about a shy dragon"    # parsed from the text
+```
+
+This used to be broken in a quiet way. The target was a fixed 550–900 words for
+everything, so *"a five minute story"* returned the same ~600 words as every
+other request — about four minutes — and *"a twenty minute story"* returned that
+too. The words `five minute` were read by nothing in the pipeline.
+
+Three things had to change, and the third is the interesting one:
+
+- **Length is parsed by regex, not by the classifier.** `bedtime/length.py`
+  reads it off the raw request before any model call. A number the family typed
+  is the one part of a request with an exact right answer, and it should not
+  make a round trip through a model that is bad at arithmetic. It also means the
+  UI can show the target immediately and costs nothing when no length is given.
+- **The beat sheet scales.** 4 beats at two minutes, 12 at twenty — capped,
+  because past a dozen the plan stops being a spine and becomes a synopsis, and
+  the storyteller starts transcribing it instead of writing.
+- **Long stories are written in sections.** Ask gpt-3.5-turbo for 2,600 words in
+  one call and it doesn't refuse — it writes about 900 good ones and then
+  compresses the rest into summary. You can watch it happen: sentences lengthen,
+  dialogue stops, the last third reads like a blurb. So past ~900 words the
+  story is written in parts against the beat sheet, each call seeing the whole
+  plan, its own run of beats, and the tail of the previous part so the seam
+  doesn't show.
+
+Reading speed is **130 wpm**, not the 200–250 used for silent adult reading —
+you do voices, and you stop when they ask what a heron is. One constant in
+`bedtime/length.py` feeds the generator, the shelf's "about 5 minutes" label and
+the TTS duration estimate, so they can't drift apart.
+
+If a draft misses the target, the length fix goes to the reviser **first**, and
+it names the gap: *"this runs 400 words, about 3 minutes; you asked for 10, it
+is 900 words short — do not pad, find the beats being rushed and give them
+room."* "Make it longer" gets you padding; a number gets you scenes.
 
 ---
 
@@ -389,14 +431,14 @@ bedtime/
   llm/                        provider, resilience, mock
   observability/              metrics, tracing, dashboard
   evaluation/                 golden set, calibrate, run_eval, red_team
-tests/                        215 tests, run offline in ~15s
+tests/                        273 tests, run offline in ~12s
 docs/                         diagram, architecture, runbook, design notes
 ```
 
 ## Commands
 
 ```bash
-make test        # 215 tests, no API key needed
+make test        # 273 tests, no API key needed
 make demo        # offline end-to-end
 make reports     # calibration + evaluation + safety
 make dashboard   # HTML monitoring view

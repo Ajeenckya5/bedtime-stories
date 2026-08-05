@@ -5,7 +5,8 @@ from typing import Optional
 
 from ..errors import ProviderError, StructuredOutputError
 from ..observability.metrics import METRICS
-from ..prompts import PLANNER_SYSTEM, PLANNER_USER, continuity_block, strategy_for
+from ..prompts import (LONG_PLAN_GUIDANCE, PLANNER_SYSTEM, PLANNER_USER,
+                       continuity_block, strategy_for)
 from ..schemas import StoryBeat, StoryBrief, StoryPlan
 from .base import Agent
 
@@ -24,6 +25,7 @@ class Planner(Agent):
         """Build the beat sheet. Synthesises a skeleton plan if the model fails."""
         strategy = strategy_for(brief.category)
         brief_block = self._render_brief(brief)
+        spec = brief.length
 
         try:
             plan, repaired = self.structured_call(
@@ -35,6 +37,11 @@ class Planner(Agent):
                     arc=strategy["arc"],
                     guidance=strategy["guidance"],
                     pacing=strategy["pacing"],
+                    n_beats=spec.beats,
+                    target_words=spec.target_words,
+                    minutes=spec.label(),
+                    words_per_beat=spec.target_words // spec.beats,
+                    length_guidance=LONG_PLAN_GUIDANCE if spec.beats >= 8 else "",
                 ),
                 StoryPlan,
                 temperature=self.settings.planner_temperature,
@@ -75,15 +82,23 @@ class Planner(Agent):
         )
 
     def _enforce(self, plan: StoryPlan, brief: StoryBrief) -> StoryPlan:
-        if len(plan.beats) < 5:
+        # The model is asked for a specific beat count and usually gives it,
+        # but it drifts on the long ones - ask for twelve and you often get
+        # eight. Top up rather than re-plan: a short plan still works, it just
+        # gives the storyteller less to write against, and each missing beat is
+        # roughly 200 words the story will come out short.
+        wanted = brief.length.beats
+        while len(plan.beats) < wanted:
             plan.beats.append(
                 StoryBeat(
-                    name="Soft Landing",
-                    purpose="wind the reader down toward sleep",
+                    name="Soft Landing" if len(plan.beats) == wanted - 1 else "A Quiet Turn",
+                    purpose="wind the reader down toward sleep"
+                    if len(plan.beats) == wanted - 1 else "let the story breathe",
                     content=plan.calming_ending
                     or f"{plan.protagonist} settles somewhere warm and safe as the night goes quiet.",
                 )
             )
+        del plan.beats[wanted:]
         if not plan.calming_ending:
             plan.calming_ending = (
                 f"{plan.protagonist} is warm, safe, and drifting off to sleep."
@@ -104,12 +119,13 @@ class Planner(Agent):
         hero = (brief.characters[0].split()[0] if brief.characters else "Nia")
         strategy = strategy_for(brief.category)
         stations = [s.strip() for s in strategy["arc"].split("->")]
+        wanted = brief.length.beats
         beats = [
             StoryBeat(name=name.title(), purpose=f"beat {i + 1} of the {brief.category.value} arc",
                       content=f"{hero} moves through: {name}.")
-            for i, name in enumerate(stations[:5])
+            for i, name in enumerate(stations[:wanted])
         ]
-        while len(beats) < 5:
+        while len(beats) < wanted:
             beats.append(StoryBeat(name="Soft Landing", purpose="wind down",
                                    content=f"{hero} settles in somewhere warm and safe."))
         return StoryPlan(

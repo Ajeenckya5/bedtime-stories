@@ -19,6 +19,7 @@ from .errors import BedtimeError, BudgetExceededError, ProviderError, UnsafeRequ
 from .guardrails.input_guard import InputGuard
 from .guardrails.output_guard import OutputGuard
 from .guardrails.validators import configure_from_env
+from .length import clamp_minutes
 from .llm.base import ChatRequest, LLMProvider, LLMResponse
 from pydantic import ValidationError
 
@@ -119,8 +120,15 @@ class StoryOrchestrator:
                 LOG.warning("memory unavailable, continuing without it: %s", exc)
 
     # public API
-    def tell(self, request: str, request_id: Optional[str] = None):
-        """Generate a story. Never raises - worst case returns the fallback."""
+    def tell(self, request: str, request_id: Optional[str] = None,
+             minutes: Optional[float] = None):
+        """Generate a story. Never raises - worst case returns the fallback.
+
+        `minutes` is an explicit reading length from a UI control. A length
+        named in the request text itself takes priority over it, because
+        someone who typed "a 20 minute story" has already said what they want
+        and a stale slider should not quietly overrule them.
+        """
         provider = _TrackingProvider(self.raw_provider, self.settings)
         provider.reset()
         trace = RunTrace(
@@ -141,7 +149,7 @@ class StoryOrchestrator:
         started = time.perf_counter()
 
         try:
-            result = self._run(request, provider, trace, result)
+            result = self._run(request, provider, trace, result, minutes)
         except BudgetExceededError as exc:
             result = self._degrade(result, provider, trace, RunStatus.FALLBACK,
                                    f"budget: {exc}", exc.user_message)
@@ -216,7 +224,7 @@ class StoryOrchestrator:
 
     # -- pipeline -----------------------------------------------------------
     def _run(self, request: str, provider: _TrackingProvider, trace: RunTrace,
-             result: StoryResult):
+             result: StoryResult, minutes: Optional[float] = None):
         gate = self.settings.gate
 
         # 1. input guardrail ------------------------------------------------
@@ -249,6 +257,15 @@ class StoryOrchestrator:
         classifier = Classifier(provider, self.settings, trace)
         with trace.span("classify"):
             brief = classifier.run(verdict.sanitized_request, raw_request=request)
+
+        # A length typed into the request beats the one passed in from a UI
+        # control. The classifier has already parsed the text, so if it found
+        # something, leave it alone.
+        if brief.target_minutes is None and minutes is not None:
+            brief.target_minutes = clamp_minutes(minutes)
+        trace.event("length", minutes=brief.length.minutes,
+                    target_words=brief.length.target_words,
+                    beats=brief.length.beats, sections=brief.length.sections)
         result.brief = brief
 
         # 2b. recall past stories -------------------------------------------

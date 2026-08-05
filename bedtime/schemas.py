@@ -58,6 +58,15 @@ class StoryBrief(BaseModel):
     target_age: int = 7
     must_include: List[str] = Field(default_factory=list)
     classification_confidence: float = 0.5
+    # Requested reading time. Parsed from the request by bedtime.length, not by
+    # the classifier - a number the family typed should not go through a model
+    # that is bad at arithmetic. 2-20 minutes; None means they did not say.
+    target_minutes: Optional[float] = None
+
+    @property
+    def length(self):
+        from .length import spec_for
+        return spec_for(self.target_minutes)
 
     @field_validator("target_age")
     @classmethod

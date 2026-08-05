@@ -8,6 +8,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from ..errors import ProviderError, StructuredOutputError
+from ..length import parse_minutes
 from ..observability.metrics import METRICS
 from ..prompts import CLASSIFY_SYSTEM, CLASSIFY_USER
 from ..schemas import StoryBrief, StoryCategory
@@ -116,6 +117,10 @@ class Classifier(Agent):
             target_age=parsed.target_age,
             must_include=must_include,
             classification_confidence=max(0.0, min(1.0, parsed.confidence)),
+            # Read off the raw text, not the model's JSON. "a 5 minute story"
+            # is the one part of the request that has an exact right answer,
+            # and a regex gets it right every time for nothing.
+            target_minutes=parse_minutes(raw or sanitized),
         )
 
     def _heuristic_brief(self, sanitized: str, raw: str):
@@ -130,6 +135,7 @@ class Classifier(Agent):
             target_age=7,
             must_include=[],
             classification_confidence=0.25,
+            target_minutes=parse_minutes(raw or sanitized),
         )
 
     @staticmethod

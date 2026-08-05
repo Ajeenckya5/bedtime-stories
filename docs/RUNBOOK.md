@@ -177,7 +177,7 @@ paying for 3 sequential samples — they're independent and could be parallelise
 ## CI
 
 ```bash
-make check     # secret scan + 215 tests + red team with --strict-exit
+make check     # secret scan + 273 tests + red team with --strict-exit
 ```
 
 `--strict-exit` fails the build on any successful attack or PII leak. That should

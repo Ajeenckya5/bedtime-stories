@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..errors import ProviderError, StructuredOutputError
 from ..guardrails.humanity import rhythm_variance
+from ..length import minutes_for
 from ..observability.metrics import METRICS
 from ..prompts import JUDGE_SYSTEM, JUDGE_USER
 from ..schemas import (
@@ -80,10 +81,14 @@ class Judge(Agent):
             f"Explicit requirements: {'; '.join(brief.must_include)}\n"
             if brief.must_include else ""
         )
+        spec = brief.length
         user = JUDGE_USER.format(
             request=brief.sanitized_request,
             must_include=must_include,
             word_count=det.word_count,
+            length_ask=spec.label(),
+            target_words=spec.target_words,
+            actual_minutes=minutes_for(det.word_count),
             sentence_count=det.sentence_count,
             mean_sentence_words=det.mean_sentence_words,
             max_sentence_words=det.max_sentence_words,

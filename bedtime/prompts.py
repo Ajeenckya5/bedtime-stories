@@ -9,7 +9,7 @@ from typing import Dict
 
 from .schemas import StoryCategory
 
-PROMPT_VERSION = "v3.4.1"
+PROMPT_VERSION = "v3.5.0"   # per-request length: sectioned generation, scaled beats
 
 # Shared fragments
 
@@ -249,7 +249,7 @@ PLANNER_SYSTEM = f"""You are a children's story architect. You do not write pros
 
 {_AUDIENCE}
 
-You will be given a brief and a category-specific arc template. Produce a beat sheet with 5 beats that gives the story a real shape: someone wants something, something gets in the way, they change a little, and everything settles.
+You will be given a brief and a category-specific arc template. Produce a beat sheet whose beat count you will be told, giving the story a real shape: someone wants something, something gets in the way, they change a little, and everything settles.
 
 {_SAFETY_RULES}
 
@@ -272,9 +272,18 @@ Arc template: {arc}
 Craft guidance: {guidance}
 Pacing: {pacing}
 
-Design the beat sheet. The obstacle must be solvable by noticing, trying again, or asking for help - never by force. Beat 5 must land the child softly.
+Design the beat sheet. The obstacle must be solvable by noticing, trying again, or asking for help - never by force. The final beat must land the child softly.
+
+LENGTH
+Write EXACTLY {n_beats} beats. The finished story will be about {target_words} words, roughly {minutes} of reading aloud, so each beat has about {words_per_beat} words to fill.
+{length_guidance}
 
 JSON beat sheet:"""
+
+# Told to the planner when the story is long enough that the beat sheet has to
+# carry real weight. A 12-beat plan whose beats are one line each produces a
+# story that sprints; the beats have to be genuinely separate events.
+LONG_PLAN_GUIDANCE = """Because this is a long story, each beat must be a distinct EVENT, not a stage of one event. Give the middle beats their own small problems that get solved. Two or three beats should be quiet ones - a meal, a walk, a conversation that goes nowhere in particular - because a long story that is all plot is exhausting to listen to at bedtime."""
 # 4. Storyteller
 
 STORYTELLER_SYSTEM = f"""You are a beloved bedtime storyteller. Parents ask for you by name because your stories are warm, specific, and easy to read aloud.
@@ -311,9 +320,54 @@ STORYTELLER_USER = """Write the complete story now, following this plan beat by 
 {continuity}
 Requested by the family: "{request}"
 {must_include}
-Length: {min_words}-{max_words} words. Hit every beat; do not skip the wind-down.
+Length: {min_words}-{max_words} words, about {minutes} read aloud. Hit every beat; do not skip the wind-down. Do not rush the middle to reach the ending - if you are running short, the answer is more of what happens, never more description of what already happened.
 
 Write the story:"""
+
+
+# --- long stories are written in sections ----------------------------------
+#
+# One call cannot hold a 2,600-word story. Ask for it and gpt-3.5 writes about
+# 900 good words and then compresses the rest into summary. The beat sheet
+# already divides the story into parts, so use it: each call writes a run of
+# beats, and sees the end of what came before so the seam does not show.
+
+SECTION_USER = """You are writing ONE SECTION of a longer story, following the plan.
+
+<plan>
+{plan}
+</plan>
+{continuity}
+Requested by the family: "{request}"
+{must_include}
+This is section {index} of {total}.
+
+Cover these beats, and only these:
+{beats}
+
+{position_note}
+
+Length for this section: {min_words}-{max_words} words. Write prose only - no section heading, no number, no summary of what came before.
+
+Write section {index}:"""
+
+SECTION_OPENING = """This is the opening. Start in the middle of something happening - no scene-setting paragraph, no "once upon a time". Introduce the character by what they do. Do NOT resolve anything; you are handing over to the next section."""
+
+SECTION_MIDDLE = """The story so far ends like this:
+
+<previous>
+{tail}
+</previous>
+
+Continue straight on from that. Do not recap it and do not repeat its last image. Do NOT wrap the story up - there are more sections after yours."""
+
+SECTION_FINAL = """The story so far ends like this:
+
+<previous>
+{tail}
+</previous>
+
+Continue straight on, and finish the story. This section carries the resolution AND the wind-down. The last three sentences must slow down and settle: short, warm, still. End on the calming image from the plan."""
 # 5. Judge
 
 JUDGE_SYSTEM = """You are a strict but fair evaluator of children's bedtime stories. You have edited early-reader fiction for twenty years. You are not the author, you owe the author nothing, and inflated praise costs real children a good story.
@@ -396,6 +450,7 @@ JUDGE_USER = """Original family request: "{request}"
 Measured facts about this draft (these are computed, not estimated - trust them
 over your own impression when scoring language_fit):
 - {word_count} words, {sentence_count} sentences
+- length asked for: {length_ask} ({target_words} words); this draft is {actual_minutes} min
 - mean sentence length {mean_sentence_words} words (target 8-14)
 - longest sentence {max_sentence_words} words (hard limit 28)
 - Flesch-Kincaid grade {fk_grade} (target 2.0-4.5)

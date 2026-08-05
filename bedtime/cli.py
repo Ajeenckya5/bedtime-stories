@@ -144,8 +144,9 @@ def narrate_and_play(result) -> None:
                if _RICH else "(open the file above to listen)")
 
 
-def run_once(request: str, as_json: bool = False, details: bool = True):
-    result = StoryOrchestrator().tell(request)
+def run_once(request: str, as_json: bool = False, details: bool = True,
+             minutes=None):
+    result = StoryOrchestrator().tell(request, minutes=minutes)
     if as_json:
         print(json.dumps(result.model_dump(mode="json"), indent=2, default=str))
     else:
@@ -217,6 +218,8 @@ def main(argv=None) -> int:
     parser.add_argument("--audio", action="store_true",
                         help="narrate the story aloud after printing it")
     parser.add_argument("--voice", help="TTS voice (nova, shimmer, alloy, fable, echo, onyx)")
+    parser.add_argument("--minutes", type=float, metavar="N",
+                        help="reading length, 2-20 min (a length in the request wins)")
     parser.add_argument("--threshold", type=float, help="override the accept threshold")
     parser.add_argument("--revisions", type=int, help="override max revision cycles")
     parser.add_argument("--samples", type=int, help="override judge samples")
@@ -237,7 +240,8 @@ def main(argv=None) -> int:
     get_settings(refresh=True)
 
     if args.request:
-        result = run_once(" ".join(args.request), as_json=args.json, details=not args.quiet)
+        result = run_once(" ".join(args.request), as_json=args.json,
+                          details=not args.quiet, minutes=args.minutes)
         if args.audio:
             narrate_and_play(result)
         return 0 if result.status in {RunStatus.OK, RunStatus.OK_DEGRADED} else 1

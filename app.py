@@ -17,6 +17,8 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent))
 
 from bedtime.config import MODEL, get_settings
+from bedtime.length import (DEFAULT_MINUTES, MAX_MINUTES, MIN_MINUTES,
+                            minutes_for, parse_minutes, spec_for)
 from bedtime.library.seed_stories import SEED_STORIES
 from bedtime.prompts import PROMPT_VERSION
 from bedtime.schemas import RunStatus
@@ -103,8 +105,9 @@ def svg_img(svg, cls="cover-wrap"):
 
 
 def reading_minutes(text):
-    # ~130 wpm read aloud to a child, which is slower than silent reading
-    return max(1, round(len(text.split()) / 130))
+    # bedtime.length owns the read-aloud speed so the shelf, the generator and
+    # the TTS duration estimate cannot drift apart
+    return max(1, round(minutes_for(len(text.split()))))
 
 
 def open_story(entry):
@@ -290,10 +293,26 @@ def generator():
                            placeholder="a story about a brave little boat that "
                                        "is scared of deep water…")
 
+    # Length: a slider, but the typed request wins if it names one. Someone who
+    # writes "a 20 minute story" has already answered the question, and having
+    # the slider quietly override them would be the wrong way round.
+    spoken = parse_minutes(request or "")
+    minutes = st.slider("How long, read aloud?", min_value=int(MIN_MINUTES),
+                        max_value=int(MAX_MINUTES),
+                        value=int(spoken or DEFAULT_MINUTES), step=1,
+                        format="%d min", disabled=spoken is not None,
+                        help="About 130 words a minute, which is read-aloud pace.")
+    spec = spec_for(spoken or minutes)
+    note = (f"You asked for {spec.label()} in the request, so the slider is off."
+            if spoken else "")
+    st.caption(f"≈ {spec.target_words} words · {spec.beats} beats"
+               + (f" · written in {spec.sections} parts" if spec.is_multi_section else "")
+               + (f" · {note}" if note else ""))
+
     a, b = st.columns([1, 4])
     if a.button("Write it", type="primary", use_container_width=True) and request.strip():
         with st.spinner("Planning the arc, writing it, then judging it…"):
-            result = get_orchestrator().tell(request.strip())
+            result = get_orchestrator().tell(request.strip(), minutes=spec.minutes)
         st.session_state["last"] = result
         if result.status is not RunStatus.REFUSED:
             entry = {
