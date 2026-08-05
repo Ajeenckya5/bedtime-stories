@@ -206,17 +206,22 @@ class MockProvider:
             friend=friend,
             motif="the sound of rain on the roof",
         )
-        return f"TITLE: {title}\n\n{body}"
+        return f"TITLE: {title}\n\n{_stretch(body, _asked_words(request.user), hero)}"
 
     def _revise(self, request: ChatRequest):
         draft = self._extract_block(request.user, "story") or ""
+        target = _asked_words(request.user)
         # Simulate a real improvement: shorten the longest sentences a little.
         improved = re.sub(r"\s+", " ", draft)
         improved = improved.replace(", and that made the choice easy", ". That made the choice easy")
         title = re.search(r"TITLE:\s*(.+)", draft)
         head = f"TITLE: {title.group(1).strip()}\n\n" if title else ""
         body = re.sub(r"^TITLE:.*?\n\n", "", draft, flags=re.DOTALL) or improved
-        return head + body
+        hero = title.group(1).split()[0] if title else "Mira"
+        # A real reviser told "you are 400 words short" makes the story longer.
+        # The mock has to do the same or the offline demo shows length going
+        # backwards on every revision cycle.
+        return head + _stretch(body, target, hero)
 
     def _judge(self, request: ChatRequest):
         from ..guardrails.readability import readability_report  # local import: avoids cycle
@@ -260,3 +265,67 @@ class MockProvider:
 
     def price(self, prompt_tokens: int, completion_tokens: int) -> float:
         return 0.0
+
+
+# --- the mock has to respect the requested length --------------------------
+#
+# It used to return the same ~270-word template whatever was asked for. That is
+# fine for testing the pipeline and misleading for anyone running the offline
+# demo: ask for twenty minutes, get two, and conclude the length feature does
+# not work. The mock should be wrong about the *prose*, not about the shape.
+
+_FILLER = [
+    "In the morning {hero} went back to look at it again, because some things "
+    "need looking at twice. The light had moved. The shape of it on the floor "
+    "was longer now, and thinner, and it reached almost to the door.",
+    # NB: this used to read "Nobody came to explain it", which is the exact
+    # strong dread marker in lexicons.py. The output guard vetoed every padded
+    # draft and the whole run fell back. The guard was right; the filler was
+    # careless.
+    "There was a sound outside like somebody folding paper very slowly. It went "
+    "on for a while and then stopped. Mum said it was the gutter, and that was "
+    "that, and it did not seem to need explaining after all.",
+    "\"Do you think it will still be there tomorrow?\" said {hero}.\n\n\"Things "
+    "usually are,\" said the cat, who was not really a cat that talked, but who "
+    "gave that impression when it wanted something.",
+    "They sat together for a long time and did not do anything in particular. "
+    "That turned out to be the best part of the day, which is often how it "
+    "goes and almost never how anybody plans it.",
+    "The kettle made its small noise in the kitchen. Somebody upstairs moved a "
+    "chair. Outside, the wind went along the street trying all the gates, and "
+    "found them shut, and moved on without minding.",
+]
+
+
+def _asked_words(user_prompt: str) -> int:
+    """Read the word target back out of the prompt we were handed.
+
+    Two phrasings, because the storyteller and the reviser word it differently.
+    Missing the reviser's one is what made the mock look broken: the draft came
+    out at the right length, the reviser rewrote it back down to the template,
+    and the run ended shorter than it started.
+    """
+    m = re.search(r"Length(?: for this section)?:\s*(\d+)\s*[-–]\s*(\d+)\s*words", user_prompt)
+    if not m:
+        m = re.search(r"between\s+(\d+)\s+and\s+(\d+)\s+words", user_prompt)
+    if m:
+        return (int(m.group(1)) + int(m.group(2))) // 2
+    return 0
+
+
+def _stretch(body: str, target: int, hero: str) -> str:
+    """Pad the template out to roughly the requested length.
+
+    Inserts before the final paragraph, never after it - the wind-down has to
+    stay last or the calm-ending check fails and the mock stops resembling a
+    real run.
+    """
+    if target <= 0 or len(body.split()) >= target:
+        return body
+    paras = [p for p in body.split("\n\n") if p.strip()]
+    head, tail = paras[:-1], paras[-1]
+    i = 0
+    while len((" ".join(head) + " " + tail).split()) < target and i < 200:
+        head.append(_FILLER[i % len(_FILLER)].format(hero=hero))
+        i += 1
+    return "\n\n".join(head + [tail])

@@ -186,3 +186,21 @@ def test_slider_applies_when_the_request_says_nothing(settings):
     o = StoryOrchestrator(MockProvider(settings=settings), settings)
     result = o.tell("a story about a shy dragon", minutes=12)
     assert result.brief.target_minutes == 12.0
+
+
+@pytest.mark.parametrize("minutes", [2, 5, 10, 20])
+def test_offline_demo_delivers_the_length_it_was_asked_for(minutes, settings):
+    """The mock has to be wrong about the prose, not about the shape.
+
+    It used to return the same ~270-word template whatever you asked for, so
+    anyone running the offline demo would ask for twenty minutes, get two, and
+    reasonably conclude the feature did not work.
+    """
+    from bedtime.schemas import RunStatus
+    o = StoryOrchestrator(MockProvider(settings=settings), settings)
+    result = o.tell("a story about a shy dragon", minutes=minutes)
+    assert result.status is RunStatus.OK, result.warnings
+    words = len(result.story.split())
+    spec = result.brief.length
+    assert spec.min_words <= words <= spec.max_words * 1.1, (
+        f"asked {minutes} min ({spec.target_words}w), got {words}w")

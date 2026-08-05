@@ -45,10 +45,16 @@ serve:  ## run the API on :8000
 
 check:  ## CI gate: tests + secret scan + red team
 	@echo "--- secret scan ---"
-	@! grep -rInE 'sk-[A-Za-z0-9_-]{20,}' --include='*.py' --include='*.md' --include='*.txt' --include='*.json' . \
+	@! grep -rInE 'sk-[A-Za-z0-9_-]{20,}' --include='*.py' --include='*.md' --include='*.txt' --include='*.json' \
+		--exclude-dir='_interview_prep' --exclude-dir='.git' . \
 		|| (echo "API KEY FOUND - do not commit" && exit 1)
 	@echo "clean"
 	@$(MAKE) test
+	@echo "--- every module imports ---"
+	@python -c "import glob, importlib; \
+		mods = [p[:-3].replace('/', '.') for p in glob.glob('bedtime/**/*.py', recursive=True) if '__init__' not in p]; \
+		[importlib.import_module(m) for m in mods]; \
+		import main; print(f'{len(mods)} modules ok')"
 	python -m bedtime.library.seed --check
 	BEDTIME_PROVIDER=mock python -m bedtime.evaluation.red_team --mock --strict-exit
 

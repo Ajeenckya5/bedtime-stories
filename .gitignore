@@ -20,6 +20,6 @@ audio/
 nohup.out
 reports/*_raw.json
 
-# personal publishing notes, not part of the deliverable
-PUBLISH.md
-RESUME_HERE.md
+
+# personal prep material, not part of the submission
+_interview_prep/

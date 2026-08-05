@@ -225,8 +225,9 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Deploying it: [DEPLOY.md](DEPLOY.md). Works with no API key — falls back to the
-offline mock and the seed library, which is a perfectly good demo link.
+Works with no API key — it falls back to the offline mock and the seed library,
+so the whole interface is browsable without spending anything. Deployment notes
+are in [docs/RUNBOOK.md](docs/RUNBOOK.md).
 
 **Two screens.** A *shelf* of covers with filter and search, and a *reading
 room*. Opening a story asks how you want it — **📖 I'll read** or **🔊 Read to
@@ -431,14 +432,14 @@ bedtime/
   llm/                        provider, resilience, mock
   observability/              metrics, tracing, dashboard
   evaluation/                 golden set, calibrate, run_eval, red_team
-tests/                        273 tests, run offline in ~12s
+tests/                        277 tests, run offline in ~11s
 docs/                         diagram, architecture, runbook, design notes
 ```
 
 ## Commands
 
 ```bash
-make test        # 273 tests, no API key needed
+make test        # 277 tests, no API key needed
 make demo        # offline end-to-end
 make reports     # calibration + evaluation + safety
 make dashboard   # HTML monitoring view
@@ -446,18 +447,16 @@ make serve       # FastAPI on :8000
 make check       # tests + secret scan + red team (CI gate)
 ```
 
-## Guides
+## Documentation
 
-- **[docs/INTERVIEW.md](docs/INTERVIEW.md)** — every decision, the alternative I
-  rejected, and why. Read this before talking to anyone about the project.
-- **[docs/WALKTHROUGH.md](docs/WALKTHROUGH.md)** — build it from an empty folder,
-  file by file, with the code and a check after every stage.
-- **[BUILD_GUIDE.md](BUILD_GUIDE.md)** — build this yourself from scratch, in
-  milestones, with hints instead of answers.
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — component-by-component detail.
+- **[docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md)** — decisions, trade-offs, and what
+  I'd do differently with more time.
 - **[docs/RUNBOOK.md](docs/RUNBOOK.md)** — deploy, monitor, alert, debug.
-- **[docs/DESIGN_NOTES.md](docs/DESIGN_NOTES.md)** — decisions, trade-offs, what I'd
-  do differently.
+- **[docs/block_diagram.svg](docs/block_diagram.svg)** — the system diagram
+  ([Mermaid source](docs/block_diagram.mmd)).
+- **[docs/original_skeleton.py](docs/original_skeleton.py)** — the provided
+  starting file, unchanged, for diffing against.
 
 ## Notes
 
