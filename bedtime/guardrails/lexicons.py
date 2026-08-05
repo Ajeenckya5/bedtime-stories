@@ -79,7 +79,10 @@ CLIFFHANGER_SIGNALS: Set[str] = {
 # and "the counting did not help" were each single-handedly failing the gate.
 # A phrase that appears in gentle prose cannot be a solo veto.
 DREAD_PATTERNS: List[Tuple[str, float]] = [
-    (r"\b(?:no ?body|no one|nothing) (?:came|helped|answered|heard|believed)\b"
+    # "came out" is a different verb. "Nobody came" is a child left alone;
+    # "nothing came out" is a nervous kid whose words won't arrive, which is
+    # the ordinary subject of half the stories in the library. Found by lib09.
+    (r"\b(?:no ?body|no one|nothing) (?:came(?! out\b)|helped|answered|heard|believed)\b"
      r"(?!.{0,30}\b(?:because|so that|which was fine)\b)", 1.0),
     (r"\bdid not (?:call for|dare|answer the door)\b", 0.6),
     (r"\b(?:could|would) not (?:move|scream|speak|breathe|look away)\b", 1.0),

@@ -19,3 +19,7 @@ audio/
 .vscode/
 nohup.out
 reports/*_raw.json
+
+# personal publishing notes, not part of the deliverable
+PUBLISH.md
+RESUME_HERE.md

@@ -29,7 +29,6 @@ are canned. That's a perfectly good demo for a submission link.
 cd ~/Downloads/"AI Agent Deployment Engineer Takehome"
 git init
 git add -A
-# check the staging area before committing - these are the exact bytes that go up
 git diff --cached --name-only | grep -x ".env" && echo "STOP: .env staged"
 git diff --cached -U0 | grep -E "sk-[A-Za-z0-9_-]{20,}" && echo "STOP: key staged"
 git commit -m "Bedtime story engine"
@@ -42,8 +41,6 @@ Run `./run_all.sh --mock` first. It scans the working tree for `sk-` followed by
 20+ key characters and separately confirms `.env` is in `.gitignore`. `make
 check` does the scan but not the gitignore check, so it can pass on a repo that
 is about to commit a key.
-
-See `PUBLISH.md` for the full walkthrough.
 
 **2. Deploy**
 

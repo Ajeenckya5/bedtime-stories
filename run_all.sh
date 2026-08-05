@@ -119,4 +119,4 @@ echo "Reports:   reports/"
 echo "Covers:    reports/covers_preview.html"
 echo "Dashboard: reports/dashboard.html"
 echo
-echo "Next:  git push  →  see PUBLISH.md"
+echo "Next:  git push  →  see DEPLOY.md"

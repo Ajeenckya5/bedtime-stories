@@ -204,11 +204,17 @@ OpenAI credit.
 
 ### Covers
 
-Every story gets an animated SVG cover drawn from its category, so you can tell
-what's inside before reading a word. Eight categories, eight scenes: a cat under
-a moon, a boat on water, a humming teapot with rising sparks, a small figure in
-a pool of light, a crescent over a bed, bouncing blobs, a child watching the
-moon, a house with a lit window.
+Every story gets an animated SVG cover, so you can tell what's inside before
+reading a word.
+
+**The cover is drawn from the story's contents, not just its category.**
+`detect_subjects()` scores concrete nouns across seventeen drawable
+subjects — cat, dragon, boat, teapot, rabbit, penguin, tree, house, book, map,
+robot, radio, star, lamp, shelf, bird, pool — weighting a title match six times
+a body match, because a title names what a story is *about* while the body
+mentions everything it passes. A story about a shy dragon gets a dragon; a story
+about a lost cat gets a cat. The category only sets the palette and the
+backdrop, and only supplies the subject when nothing concrete is found.
 
 **They're drawn in code, not generated.** That was deliberate — an image model
 costs ~$0.04 per cover, takes ten seconds, adds a third model to a project whose
@@ -383,14 +389,14 @@ bedtime/
   llm/                        provider, resilience, mock
   observability/              metrics, tracing, dashboard
   evaluation/                 golden set, calibrate, run_eval, red_team
-tests/                        70 tests, run offline in <1s
+tests/                        215 tests, run offline in ~15s
 docs/                         diagram, architecture, runbook, design notes
 ```
 
 ## Commands
 
 ```bash
-make test        # 70 tests, no API key needed
+make test        # 215 tests, no API key needed
 make demo        # offline end-to-end
 make reports     # calibration + evaluation + safety
 make dashboard   # HTML monitoring view

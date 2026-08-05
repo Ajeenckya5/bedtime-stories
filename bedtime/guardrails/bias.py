@@ -184,7 +184,13 @@ def bias_report(text: str, *, is_request: bool = False):
         # Only comment when there is enough material to be meaningful, and never
         # penalise a legitimate single-protagonist story.
         total = rep.female_agency + rep.male_agency
-        if total >= 6 and rep.agency_balance < 0.25:
+        # The bias worth flagging is "both are here, only one of them does
+        # anything" - the princess who waits while the prince acts. A cast that
+        # is simply all one gender is not that. A girl and her swimming coach is
+        # a normal story, and telling the writer to add a man to it is the wrong
+        # note. So require the quieter gender to actually be on the page.
+        both_present = bool(_FEMALE.search(text)) and bool(_MALE.search(text))
+        if total >= 6 and rep.agency_balance < 0.25 and both_present:
             rep.fixes.append(
                 "Almost every action in this story is taken by characters of one gender. "
                 "Let at least one character of another gender make a decision that "
